@@ -5,16 +5,17 @@ const { kv } = require('@vercel/kv');
 
 async function getWebsitesList() {
   try {
-    const websites = JSON.parse(await kv.get('websites')) || [];
-    console.log('Current list of websites:', websites);
+    const websites = await kv.get('websites');
+    const websitesList = typeof websites === 'string' ? JSON.parse(websites) : websites || [];
+    console.log('Current list of websites:', websitesList);
 
     // Check if drew.tech is already in the list
-    const drewTechExists = websites.some(site => site.url === 'https://drew.tech');
+    const drewTechExists = websitesList.some(site => site.url === 'https://drew.tech');
 
     if (!drewTechExists) {
       // Add drew.tech to the list
-      websites.push({ url: 'https://drew.tech' });
-      await kv.set('websites', JSON.stringify(websites));
+      websitesList.push({ url: 'https://drew.tech' });
+      await kv.set('websites', JSON.stringify(websitesList));
       console.log('Added drew.tech to the list of websites.');
     }
   } catch (error) {
