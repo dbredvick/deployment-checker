@@ -1,22 +1,13 @@
 const fetch = require('node-fetch');
-const redis = require('redis');
-const { promisify } = require('util');
+const { kv } = require('@vercel/kv');
 
 // Load environment variables
 require('dotenv').config();
 
-const client = redis.createClient({
-  url: process.env.KV_URL,
-  password: process.env.KV_REST_API_TOKEN,
-});
-
-const getAsync = promisify(client.get).bind(client);
-const setAsync = promisify(client.set).bind(client);
-
 async function checkDeployments() {
   try {
-    // Fetch the list of websites from Redis
-    const websites = JSON.parse(await getAsync('websites'));
+    // Fetch the list of websites from Vercel KV
+    const websites = JSON.parse(await kv.get('websites'));
 
     for (const website of websites) {
       const response = await fetch(website.url);
@@ -26,19 +17,17 @@ async function checkDeployments() {
       const assetHashes = extractAssetHashes(text);
 
       // Compare with previously stored hashes
-      const previousHashes = JSON.parse(await getAsync(`hashes:${website.url}`)) || [];
+      const previousHashes = JSON.parse(await kv.get(`hashes:${website.url}`)) || [];
       const newDeployments = assetHashes.filter(hash => !previousHashes.includes(hash));
 
       if (newDeployments.length > 0) {
         // Update stored hashes and log the deployment event
-        await setAsync(`hashes:${website.url}`, JSON.stringify(assetHashes));
+        await kv.set(`hashes:${website.url}`, JSON.stringify(assetHashes));
         await logDeploymentEvent(website.url, newDeployments);
       }
     }
   } catch (error) {
     console.error('Error checking deployments:', error);
-  } finally {
-    client.quit();
   }
 }
 
@@ -51,9 +40,9 @@ function extractAssetHashes(html) {
 async function logDeploymentEvent(url, newDeployments) {
   const timestamp = new Date().toISOString();
   const event = { url, newDeployments, timestamp };
-  const events = JSON.parse(await getAsync('deploymentEvents')) || [];
+  const events = JSON.parse(await kv.get('deploymentEvents')) || [];
   events.push(event);
-  await setAsync('deploymentEvents', JSON.stringify(events));
+  await kv.set('deploymentEvents', JSON.stringify(events));
 }
 
 checkDeployments();
