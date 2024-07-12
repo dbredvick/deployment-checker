@@ -2,9 +2,6 @@
   const fetch = (await import('node-fetch')).default;
   const { kv } = require('@vercel/kv');
 
-  // Load environment variables
-  require('dotenv').config();
-
   const regexPattern = process.env.ASSET_HASH_REGEX || '/_next/static/[^"]+';
 
   async function checkDeployments() {
