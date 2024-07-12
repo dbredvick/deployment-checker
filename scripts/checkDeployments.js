@@ -45,10 +45,21 @@ function extractAssetHashes(html) {
 }
 
 async function logDeploymentEvent(url, newDeployments) {
-  const timestamp = new Date().toISOString();
-  const event = { url, newDeployments, timestamp };
+  const timestamp = new Date().toISOString().split('T')[0]; // Extract only the date part
   const events = JSON.parse(await kv.get('deploymentEvents')) || [];
-  events.push(event);
+
+  // Find the event for the current date
+  let event = events.find(event => event.date === timestamp);
+
+  if (!event) {
+    // If no event exists for the current date, create a new one
+    event = { date: timestamp, deployments: 0 };
+    events.push(event);
+  }
+
+  // Increment the deployment count for the current date
+  event.deployments += newDeployments.length;
+
   await kv.set('deploymentEvents', JSON.stringify(events));
 }
 
