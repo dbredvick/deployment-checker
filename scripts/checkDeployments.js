@@ -4,6 +4,8 @@ const { kv } = require('@vercel/kv');
 // Load environment variables
 require('dotenv').config();
 
+const regexPattern = process.env.ASSET_HASH_REGEX || '/_next/static/[^"]+';
+
 async function checkDeployments() {
   try {
     // Fetch the list of websites from Vercel KV
@@ -32,9 +34,14 @@ async function checkDeployments() {
 }
 
 function extractAssetHashes(html) {
-  const regex = /\/_next\/static\/[^"]+/g;
-  const matches = html.match(regex);
-  return matches ? matches.map(match => match.split('/').pop()) : [];
+  try {
+    const regex = new RegExp(regexPattern, 'g');
+    const matches = html.match(regex);
+    return matches ? matches.map(match => match.split('/').pop()) : [];
+  } catch (error) {
+    console.error('Invalid regex pattern:', error);
+    return [];
+  }
 }
 
 async function logDeploymentEvent(url, newDeployments) {
