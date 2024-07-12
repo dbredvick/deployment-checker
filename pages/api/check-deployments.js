@@ -8,22 +8,27 @@ async function checkDeployments() {
   try {
     // Fetch the list of websites from Vercel KV
     const websites = JSON.parse(await kv.get('websites'));
+    console.log('Fetched websites:', websites);
 
     for (const website of websites) {
       const response = await fetch(website.url);
       const text = await response.text();
+      console.log(`Fetched HTML for ${website.url}`);
 
       // Extract asset hashes from the HTML content
       const assetHashes = extractAssetHashes(text);
+      console.log(`Extracted asset hashes for ${website.url}:`, assetHashes);
 
       // Compare with previously stored hashes
       const previousHashes = JSON.parse(await kv.get(`hashes:${website.url}`)) || [];
       const newDeployments = assetHashes.filter(hash => !previousHashes.includes(hash));
+      console.log(`New deployments for ${website.url}:`, newDeployments);
 
       if (newDeployments.length > 0) {
         // Update stored hashes and log the deployment event
         await kv.set(`hashes:${website.url}`, JSON.stringify(assetHashes));
         await logDeploymentEvent(website.url, newDeployments);
+        console.log(`Logged deployment event for ${website.url}`);
       }
     }
   } catch (error) {
