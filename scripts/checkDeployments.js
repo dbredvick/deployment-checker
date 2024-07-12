@@ -7,9 +7,10 @@
   async function checkDeployments() {
     try {
       // Fetch the list of websites from Vercel KV
-      const websites = JSON.parse(await kv.get('websites'));
+      const websites = await kv.get('websites');
+      const websitesList = typeof websites === 'string' ? JSON.parse(websites) : websites;
 
-      for (const website of websites) {
+      for (const website of websitesList) {
         const response = await fetch(website.url);
         const text = await response.text();
 
@@ -17,8 +18,9 @@
         const assetHashes = extractAssetHashes(text);
 
         // Compare with previously stored hashes
-        const previousHashes = JSON.parse(await kv.get(`hashes:${website.url}`)) || [];
-        const newDeployments = assetHashes.filter(hash => !previousHashes.includes(hash));
+        const previousHashes = await kv.get(`hashes:${website.url}`);
+        const previousHashesList = typeof previousHashes === 'string' ? JSON.parse(previousHashes) : previousHashes || [];
+        const newDeployments = assetHashes.filter(hash => !previousHashesList.includes(hash));
 
         if (newDeployments.length > 0) {
           // Update stored hashes and log the deployment event
@@ -44,21 +46,22 @@
 
   async function logDeploymentEvent(url, newDeployments) {
     const timestamp = new Date().toISOString().split('T')[0]; // Extract only the date part
-    const events = JSON.parse(await kv.get('deploymentEvents')) || [];
+    const events = await kv.get('deploymentEvents');
+    const eventsList = typeof events === 'string' ? JSON.parse(events) : events || [];
 
     // Find the event for the current date
-    let event = events.find(event => event.date === timestamp);
+    let event = eventsList.find(event => event.date === timestamp);
 
     if (!event) {
       // If no event exists for the current date, create a new one
       event = { date: timestamp, deployments: 0 };
-      events.push(event);
+      eventsList.push(event);
     }
 
     // Increment the deployment count for the current date
     event.deployments += newDeployments.length;
 
-    await kv.set('deploymentEvents', JSON.stringify(events));
+    await kv.set('deploymentEvents', JSON.stringify(eventsList));
   }
 
   checkDeployments();
