@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@vercel/kv": "^2.0.0",
+    "chart.js": "^4.4.3",
     "next": "14.2.5",
     "node-fetch": "^3.3.2",
     "react": "^18",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
     "redis": "^4.6.15"
   },
