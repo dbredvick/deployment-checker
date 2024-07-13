@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv';
+import { unstable_noStore } from 'next/cache';
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
@@ -14,6 +15,10 @@ export default async function handler(req, res) {
                 // Add the new URL to the list
                 websitesList.push({ url });
                 await kv.set('websites', JSON.stringify(websitesList));
+
+                unstable_noStore();
+                await fetch('/api/check-deployments');
+
                 res.status(201).json({ message: 'URL added successfully', url });
             } else {
                 res.status(409).json({ message: 'URL already exists' });
