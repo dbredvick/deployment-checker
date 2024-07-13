@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { kv } from '@vercel/kv';
-import fetch from 'node-fetch';
 
 const regexPattern = process.env.ASSET_HASH_REGEX || '/_next/static/[^"]+';
 
