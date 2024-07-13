@@ -1,4 +1,5 @@
 'use client'
+import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -29,6 +30,7 @@ const Modal = ({ isOpen, onClose, children }) => {
 // @ts-ignore
 const AddUrlForm = ({ onClose, onUrlAdded }) => {
   const [url, setUrl] = useState('');
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -53,6 +55,7 @@ const AddUrlForm = ({ onClose, onUrlAdded }) => {
 
       onUrlAdded(url);
       onClose();
+      router.push('/')
     } catch (err) {
       setError('Failed to add URL. Please try again.');
     } finally {

@@ -17,7 +17,7 @@ export default async function handler(req, res) {
                 await kv.set('websites', JSON.stringify(websitesList));
 
                 unstable_noStore();
-                await fetch('/api/check-deployments');
+                await fetch(`${process.env.NODE_ENV === 'production' ? 'https://' : 'http://'}${process.env.NEXT_PUBLIC_VERCEL_URL}/api/check-deployments`);
 
                 res.status(201).json({ message: 'URL added successfully', url });
             } else {
