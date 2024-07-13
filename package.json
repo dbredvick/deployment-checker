@@ -33,19 +33,5 @@
     "tailwindcss": "^3.4.1",
     "ts-jest": "^29.2.2",
     "typescript": "^5"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/$1"
-    },
-    "transform": {
-      "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
-    },
-    "transformIgnorePatterns": [
-      "/node_modules/"
-    ]
   }
 }
