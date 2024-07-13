@@ -4,7 +4,7 @@ import { kv } from '@vercel/kv';
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const deploymentEvents = JSON.parse(await kv.get('deploymentEvents')) || [];
+      const deploymentEvents = await kv.get('deploymentEvents') || [];
       res.status(200).json(deploymentEvents);
     } catch (error) {
       console.error('Error fetching deployment data:', error);
